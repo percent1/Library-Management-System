@@ -180,4 +180,86 @@ public int addBook(Book book) {
 
     throw new RuntimeException("Book was added, but no ID was returned.");
 }
+/**
+ * Updates an existing book in the database.
+ *
+ * @param book the Book object containing the updated information
+ * @return true if the book was updated, otherwise false
+ */
+public boolean updateBook(Book book) {
+
+    // SQL statement used to update an existing book.
+    String sql = """
+            UPDATE books
+            SET title = ?,
+                author = ?,
+                isbn = ?,
+                genre = ?,
+                publication_year = ?,
+                available = ?
+            WHERE book_id = ?
+            """;
+
+    try (Connection connection = DatabaseConnection.getConnection();
+         PreparedStatement statement = connection.prepareStatement(sql)) {
+
+        // Set the updated book information.
+        statement.setString(1, book.getTitle());
+        statement.setString(2, book.getAuthor());
+        statement.setString(3, book.getIsbn());
+        statement.setString(4, book.getGenre());
+        statement.setObject(5, book.getPublicationYear());
+        statement.setBoolean(6, book.isAvailable());
+
+        // The final ? represents the book ID.
+        statement.setInt(7, book.getBookId());
+
+        // Execute the UPDATE statement.
+        int rowsAffected = statement.executeUpdate();
+
+        // Return true if a database row was updated.
+        return rowsAffected > 0;
+
+    } catch (SQLException e) {
+
+        // Report the database error to the calling code.
+        throw new RuntimeException(
+                "Could not update book with ID "
+                        + book.getBookId() + ".",
+                e
+        );
+    }
+}
+/**
+ * Deletes a book from the database.
+ *
+ * @param bookId unique ID of the book to delete
+ * @return true if the book was deleted, otherwise false
+ */
+public boolean deleteBook(int bookId) {
+
+    // SQL statement used to delete a book.
+    String sql = "DELETE FROM books WHERE book_id = ?";
+
+    try (Connection connection = DatabaseConnection.getConnection();
+         PreparedStatement statement = connection.prepareStatement(sql)) {
+
+        // Set the book ID for the ? placeholder.
+        statement.setInt(1, bookId);
+
+        // Execute the DELETE statement.
+        int rowsAffected = statement.executeUpdate();
+
+        // Return true if a book was deleted.
+        return rowsAffected > 0;
+
+    } catch (SQLException e) {
+
+        // Report the database error to the calling code.
+        throw new RuntimeException(
+                "Could not delete book with ID " + bookId + ".",
+                e
+        );
+    }
+}
 }
