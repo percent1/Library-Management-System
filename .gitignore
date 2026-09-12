@@ -1,0 +1,24 @@
+# Java compiled files
+*.class
+
+# VS Code settings
+.vscode/
+
+# IntelliJ IDEA settings
+.idea/
+
+# Eclipse settings
+.classpath
+.project
+.settings/
+
+# macOS files
+.DS_Store
+
+# Build/output folders
+bin/
+out/
+target/
+
+# JavaFX generated files
+*.log
