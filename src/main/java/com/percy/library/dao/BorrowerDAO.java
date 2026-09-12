@@ -216,4 +216,108 @@ public class BorrowerDAO {
             );
         }
     }
+
+        /**
+     * Searches borrowers by first or last name.
+     *
+     * The search is case-insensitive.
+     *
+     * @param name the name to search for
+     * @return a list of matching borrowers
+     */
+    public List<Borrower> searchByName(String name) {
+
+        String sql = """
+                SELECT * FROM borrowers
+                WHERE LOWER(first_name) LIKE LOWER(?)
+                   OR LOWER(last_name) LIKE LOWER(?)
+                ORDER BY last_name, first_name
+                """;
+
+        List<Borrower> borrowers = new ArrayList<>();
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            String searchText = "%" + name + "%";
+
+            statement.setString(1, searchText);
+            statement.setString(2, searchText);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+
+                while (resultSet.next()) {
+
+                    Borrower borrower = new Borrower(
+                            resultSet.getInt("borrower_id"),
+                            resultSet.getString("first_name"),
+                            resultSet.getString("last_name"),
+                            resultSet.getString("email"),
+                            resultSet.getString("phone")
+                    );
+
+                    borrowers.add(borrower);
+                }
+            }
+
+        } catch (SQLException e) {
+
+            throw new RuntimeException(
+                    "Could not search borrowers by name.",
+                    e
+            );
+        }
+
+        return borrowers;
+    }
+
+    /**
+     * Searches borrowers by email address.
+     *
+     * The search is case-insensitive.
+     *
+     * @param email the email text to search for
+     * @return a list of matching borrowers
+     */
+    public List<Borrower> searchByEmail(String email) {
+
+        String sql = """
+                SELECT * FROM borrowers
+                WHERE LOWER(email) LIKE LOWER(?)
+                ORDER BY email
+                """;
+
+        List<Borrower> borrowers = new ArrayList<>();
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, "%" + email + "%");
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+
+                while (resultSet.next()) {
+
+                    Borrower borrower = new Borrower(
+                            resultSet.getInt("borrower_id"),
+                            resultSet.getString("first_name"),
+                            resultSet.getString("last_name"),
+                            resultSet.getString("email"),
+                            resultSet.getString("phone")
+                    );
+
+                    borrowers.add(borrower);
+                }
+            }
+
+        } catch (SQLException e) {
+
+            throw new RuntimeException(
+                    "Could not search borrowers by email.",
+                    e
+            );
+        }
+
+        return borrowers;
+    }
 }

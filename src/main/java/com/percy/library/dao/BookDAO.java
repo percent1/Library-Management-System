@@ -262,4 +262,243 @@ public boolean deleteBook(int bookId) {
         );
     }
 }
+
+    /**
+     * Searches for books whose title contains the supplied search text.
+     *
+     * The search is case-insensitive.
+     *
+     * @param title the title text to search for
+     * @return a list of matching books
+     */
+    public List<Book> searchByTitle(String title) {
+
+        String sql = """
+                SELECT * FROM books
+                WHERE LOWER(title) LIKE LOWER(?)
+                ORDER BY title
+                """;
+
+        List<Book> books = new ArrayList<>();
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, "%" + title + "%");
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+
+                while (resultSet.next()) {
+
+                    Book book = new Book(
+                            resultSet.getInt("book_id"),
+                            resultSet.getString("title"),
+                            resultSet.getString("author"),
+                            resultSet.getString("isbn"),
+                            resultSet.getString("genre"),
+                            resultSet.getObject(
+                                    "publication_year",
+                                    Integer.class
+                            ),
+                            resultSet.getBoolean("available")
+                    );
+
+                    books.add(book);
+                }
+            }
+
+        } catch (SQLException e) {
+
+            throw new RuntimeException(
+                    "Could not search books by title.",
+                    e
+            );
+        }
+
+        return books;
+    }
+
+    /**
+     * Searches for books whose author contains the supplied search text.
+     *
+     * The search is case-insensitive.
+     *
+     * @param author the author text to search for
+     * @return a list of matching books
+     */
+    public List<Book> searchByAuthor(String author) {
+
+        String sql = """
+                SELECT * FROM books
+                WHERE LOWER(author) LIKE LOWER(?)
+                ORDER BY author, title
+                """;
+
+        List<Book> books = new ArrayList<>();
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, "%" + author + "%");
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+
+                while (resultSet.next()) {
+
+                    Book book = new Book(
+                            resultSet.getInt("book_id"),
+                            resultSet.getString("title"),
+                            resultSet.getString("author"),
+                            resultSet.getString("isbn"),
+                            resultSet.getString("genre"),
+                            resultSet.getObject(
+                                    "publication_year",
+                                    Integer.class
+                            ),
+                            resultSet.getBoolean("available")
+                    );
+
+                    books.add(book);
+                }
+            }
+
+        } catch (SQLException e) {
+
+            throw new RuntimeException(
+                    "Could not search books by author.",
+                    e
+            );
+        }
+
+        return books;
+    }
+
+    /**
+     * Retrieves books belonging to a specific genre.
+     *
+     * The search is case-insensitive.
+     *
+     * @param genre the genre to filter by
+     * @return a list of books in the specified genre
+     */
+    public List<Book> filterByGenre(String genre) {
+
+        String sql = """
+                SELECT * FROM books
+                WHERE LOWER(genre) = LOWER(?)
+                ORDER BY title
+                """;
+
+        List<Book> books = new ArrayList<>();
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, genre);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+
+                while (resultSet.next()) {
+
+                    Book book = new Book(
+                            resultSet.getInt("book_id"),
+                            resultSet.getString("title"),
+                            resultSet.getString("author"),
+                            resultSet.getString("isbn"),
+                            resultSet.getString("genre"),
+                            resultSet.getObject(
+                                    "publication_year",
+                                    Integer.class
+                            ),
+                            resultSet.getBoolean("available")
+                    );
+
+                    books.add(book);
+                }
+            }
+
+        } catch (SQLException e) {
+
+            throw new RuntimeException(
+                    "Could not filter books by genre.",
+                    e
+            );
+        }
+
+        return books;
+    }
+
+    /**
+     * Retrieves all books sorted alphabetically by title.
+     *
+     * @return books sorted by title
+     */
+    public List<Book> getBooksSortedByTitle() {
+
+        String sql = "SELECT * FROM books ORDER BY title";
+
+        return getBooksFromQuery(sql);
+    }
+
+    /**
+     * Retrieves all books sorted by publication year.
+     *
+     * @return books sorted from oldest to newest
+     */
+    public List<Book> getBooksSortedByPublicationYear() {
+
+        String sql = """
+                SELECT * FROM books
+                ORDER BY publication_year
+                """;
+
+        return getBooksFromQuery(sql);
+    }
+
+    /**
+     * Executes a book query and converts the results into Book objects.
+     *
+     * This helper method prevents the sorting methods from duplicating
+     * the same database-to-object conversion code.
+     *
+     * @param sql the SQL query to execute
+     * @return a list of books
+     */
+    private List<Book> getBooksFromQuery(String sql) {
+
+        List<Book> books = new ArrayList<>();
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+
+                Book book = new Book(
+                        resultSet.getInt("book_id"),
+                        resultSet.getString("title"),
+                        resultSet.getString("author"),
+                        resultSet.getString("isbn"),
+                        resultSet.getString("genre"),
+                        resultSet.getObject(
+                                "publication_year",
+                                Integer.class
+                        ),
+                        resultSet.getBoolean("available")
+                );
+
+                books.add(book);
+            }
+
+        } catch (SQLException e) {
+
+            throw new RuntimeException(
+                    "Could not retrieve sorted books.",
+                    e
+            );
+        }
+
+        return books;
+    }
+    
 }
