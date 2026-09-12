@@ -21,4 +21,7 @@ out/
 target/
 
 # JavaFX generated files
-*.log
+*.loggit status
+
+# Local database credentials
+src/main/resources/db.properties
