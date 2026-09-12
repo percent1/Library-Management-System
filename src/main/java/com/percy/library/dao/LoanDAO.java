@@ -1,7 +1,9 @@
+
 package com.percy.library.dao;
 
 import com.percy.library.config.DatabaseConnection;
 import com.percy.library.model.Loan;
+import com.percy.library.model.LoanDetails;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -130,11 +132,14 @@ public class LoanDAO {
             statement.setDate(4, Date.valueOf(loan.getDueDate()));
 
             if (loan.getReturnDate() != null) {
+
                 statement.setDate(
                         5,
                         Date.valueOf(loan.getReturnDate())
                 );
+
             } else {
+
                 statement.setNull(
                         5,
                         java.sql.Types.DATE
@@ -252,5 +257,66 @@ public class LoanDAO {
                     e
             );
         }
+    }
+
+    /**
+     * Retrieves all loans together with the related
+     * book title and borrower name.
+     *
+     * This method joins the loans, books, and borrowers
+     * tables so the user interface can display meaningful
+     * information instead of only database IDs.
+     *
+     * @return a list containing detailed loan information
+     */
+    public List<LoanDetails> getAllLoanDetails() {
+
+        String sql = """
+                SELECT
+                    l.loan_id,
+                    b.title AS book_title,
+                    CONCAT(br.first_name, ' ', br.last_name) AS borrower_name,
+                    l.loan_date,
+                    l.due_date,
+                    l.return_date
+                FROM loans l
+                JOIN books b
+                    ON l.book_id = b.book_id
+                JOIN borrowers br
+                    ON l.borrower_id = br.borrower_id
+                ORDER BY l.loan_id
+                """;
+
+        List<LoanDetails> loanDetails = new ArrayList<>();
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+
+                LoanDetails details = new LoanDetails(
+                        resultSet.getInt("loan_id"),
+                        resultSet.getString("book_title"),
+                        resultSet.getString("borrower_name"),
+                        resultSet.getDate("loan_date").toLocalDate(),
+                        resultSet.getDate("due_date").toLocalDate(),
+                        resultSet.getDate("return_date") != null
+                                ? resultSet.getDate("return_date").toLocalDate()
+                                : null
+                );
+
+                loanDetails.add(details);
+            }
+
+        } catch (SQLException e) {
+
+            throw new RuntimeException(
+                    "Could not retrieve detailed loan information.",
+                    e
+            );
+        }
+
+        return loanDetails;
     }
 }

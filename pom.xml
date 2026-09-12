@@ -18,13 +18,31 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.mysql</groupId>
-            <artifactId>mysql-connector-j</artifactId>
-            <version>26.7.0</version>
-        </dependency>
-    </dependencies>
-        <build>
+
+    <!-- MySQL JDBC driver -->
+    <dependency>
+        <groupId>com.mysql</groupId>
+        <artifactId>mysql-connector-j</artifactId>
+        <version>26.7.0</version>
+    </dependency>
+
+    <!-- JavaFX controls such as buttons, tables and text fields -->
+    <dependency>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-controls</artifactId>
+        <version>21.0.6</version>
+    </dependency>
+
+    <!-- JavaFX FXML support for designing interfaces separately -->
+    <dependency>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-fxml</artifactId>
+        <version>21.0.6</version>
+    </dependency>
+
+</dependencies>
+        
+    <build>
 
     <plugins>
 
@@ -33,6 +51,17 @@
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
             <version>3.5.0</version>
+        </plugin>
+
+        <!-- Allows Maven to run JavaFX applications. -->
+        <plugin>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-maven-plugin</artifactId>
+            <version>0.0.8</version>
+
+            <configuration>
+    <mainClass>com.percy.library.ui.LibraryApplication</mainClass>
+</configuration>
         </plugin>
 
     </plugins>
